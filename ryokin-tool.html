@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>料金説明ツール｜ぷらす鍼灸整骨院</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f1;
+    --surface: #ffffff;
+    --surface2: #f8f7f4;
+    --border: #e4e2db;
+    --border2: #d0cec5;
+    --text: #1a1917;
+    --text2: #6b6963;
+    --text3: #9e9b94;
+    --accent: #1a6b4a;
+    --accent-light: #e8f4ee;
+    --accent-border: #5aad84;
+    --accent-text: #0f4a32;
+    --danger: #c0392b;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+  }
+
+  html { font-size: 16px; }
+  body {
+    font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── ヘッダー ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header .logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  header .logo svg { width: 20px; height: 20px; }
+  header h1 { font-size: 16px; font-weight: 600; color: var(--text); }
+  header .subtitle { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+  /* ── レイアウト ── */
+  .main {
+    display: flex;
+    gap: 0;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  /* ── 左：メニューパネル ── */
+  .panel-menu {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .section-head {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .category-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .category-head {
+    padding: 12px 16px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cat-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+  .menu-btn {
+    background: var(--surface);
+    border: none;
+    padding: 13px 14px;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    position: relative;
+    transition: background 0.1s;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .menu-btn:active { background: #f0efea; }
+  .menu-btn.selected { background: var(--accent-light); }
+  .menu-btn.selected::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+  }
+  .btn-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1.35;
+  }
+  .menu-btn.selected .btn-name { color: var(--accent-text); }
+  .btn-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .btn-price {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    font-variant-numeric: tabular-nums;
+  }
+  .menu-btn.selected .btn-price { color: var(--accent); }
+  .btn-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.1s;
+    flex-shrink: 0;
+  }
+  .menu-btn.selected .btn-check { opacity: 1; }
+  .btn-check svg { width: 10px; height: 10px; }
+
+  /* ── 右：合計パネル ── */
+  .panel-receipt {
+    width: 290px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: sticky;
+    top: 82px;
+  }
+
+  .receipt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .receipt-header {
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .receipt-body {
+    padding: 12px 16px;
+    min-height: 120px;
+  }
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 100px;
+    color: var(--text3);
+    font-size: 13px;
+  }
+  .empty-state svg { opacity: 0.3; }
+
+  .receipt-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .receipt-item:last-child { border-bottom: none; }
+  .ri-name { flex: 1; font-size: 13px; color: var(--text); line-height: 1.35; }
+  .ri-price { font-size: 13px; font-weight: 600; color: var(--text2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ri-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text3); padding: 0;
+    display: flex; align-items: center;
+    transition: color 0.1s;
+    line-height: 1;
+  }
+  .ri-del:hover, .ri-del:active { color: var(--danger); }
+  .ri-del svg { width: 14px; height: 14px; }
+
+  .total-card {
+    background: var(--accent);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+  .total-label { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; margin-bottom: 4px; }
+  .total-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .total-tax { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px; }
+  .total-count { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 6px; }
+
+  .btn-reset {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.1s, border-color 0.1s;
+    font-family: inherit;
+  }
+  .btn-reset:hover { background: var(--surface2); border-color: var(--border2); }
+  .btn-reset:active { background: #eceae4; }
+  .btn-reset svg { width: 14px; height: 14px; }
+
+  .notice {
+    font-size: 11px;
+    color: var(--text3);
+    line-height: 1.7;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  /* ── モバイル（768px以下） ── */
+  @media (max-width: 768px) {
+    .main { flex-direction: column; padding: 12px; gap: 12px; }
+    .panel-receipt {
+      width: 100%;
+      position: static;
+      order: -1;
+    }
+    .total-amount { font-size: 28px; }
+    .menu-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    .menu-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 2C10 2 5 5 5 10C5 13 7 15.5 10 17C13 15.5 15 13 15 10C15 5 10 2 10 2Z" fill="white" opacity="0.9"/>
+      <path d="M10 6V14M7 10H13" stroke="#1a6b4a" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1>料金説明ツール</h1>
+    <div class="subtitle">ぷらす鍼灸整骨院グループ</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- 左：メニュー -->
+  <div class="panel-menu">
+    <div class="section-head">施術メニュー一覧</div>
+    <div id="menu-area"></div>
+  </div>
+
+  <!-- 右：合計 -->
+  <div class="panel-receipt">
+    <div class="receipt-card">
+      <div class="receipt-header">選択中のメニュー</div>
+      <div class="receipt-body" id="receipt-body">
+        <div class="empty-state" id="empty-state">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="5" y="3" width="14" height="18" rx="2"/>
+            <path d="M9 7h6M9 11h6M9 15h4"/>
+          </svg>
+          メニューを選択してください
+        </div>
+        <div id="receipt-items" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="total-card" id="total-card" style="display:none">
+      <div class="total-label">合計金額（税込）</div>
+      <div class="total-amount" id="total-amount">¥0</div>
+      <div class="total-tax">消費税 10% 込み</div>
+      <div class="total-count" id="total-count"></div>
+    </div>
+
+    <button class="btn-reset" id="reset-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+      </svg>
+      リセット
+    </button>
+
+    <div class="notice">
+      ※ 保険適用メニューは3割負担の目安額です。<br>
+      ※ 実際の金額は保険証・症状により異なります。<br>
+      ※ 複数施術の組み合わせは窓口にてご確認ください。
+    </div>
+  </div>
+</div>
+
+<script>
+const MENUS = [
+  {
+    category: "保険診療",
+    color: "#2980b9",
+    items: [
+      { id: "ins1", name: "初診料（保険 3割）",   price: 1000 },
+      { id: "ins2", name: "再診料（保険 3割）",   price: 370  },
+      { id: "ins3", name: "骨折・脱臼施術",       price: 1200 },
+      { id: "ins4", name: "捻挫・打撲施術",       price: 800  },
+    ]
+  },
+  {
+    category: "自費施術",
+    color: "#1a6b4a",
+    items: [
+      { id: "jhi1", name: "整体（30分）",   price: 3300 },
+      { id: "jhi2", name: "整体（60分）",   price: 5500 },
+      { id: "jhi3", name: "骨盤矯正",       price: 4400 },
+      { id: "jhi4", name: "猫背矯正",       price: 3300 },
+    ]
+  },
+  {
+    category: "鍼灸",
+    color: "#8e44ad",
+    items: [
+      { id: "acu1", name: "鍼治療（全身）", price: 5500 },
+      { id: "acu2", name: "鍼治療（局所）", price: 3300 },
+      { id: "acu3", name: "灸治療",         price: 2200 },
+      { id: "acu4", name: "鍼灸セット",     price: 7150 },
+    ]
+  },
+  {
+    category: "物理療法・オプション",
+    color: "#e67e22",
+    items: [
+      { id: "opt1", name: "EMS（電気刺激）",  price: 1100 },
+      { id: "opt2", name: "超音波療法",        price: 1100 },
+      { id: "opt3", name: "テーピング",        price: 550  },
+      { id: "opt4", name: "温熱療法",          price: 660  },
+    ]
+  },
+  {
+    category: "リラクゼーション",
+    color: "#c0392b",
+    items: [
+      { id: "rel1", name: "ヘッドマッサージ（20分）",      price: 2200 },
+      { id: "rel2", name: "足裏リフレクソロジー（30分）",  price: 2750 },
+      { id: "rel3", name: "アロマトリートメント（60分）",  price: 4400 },
+    ]
+  }
+];
+
+let selected = {};
+
+function fmt(n) {
+  return "¥" + n.toLocaleString("ja-JP");
+}
+
+// メニュー生成
+function buildMenu() {
+  const area = document.getElementById("menu-area");
+  MENUS.forEach(cat => {
+    const block = document.createElement("div");
+    block.className = "category-block";
+
+    const head = document.createElement("div");
+    head.className = "category-head";
+    head.innerHTML = `<span class="cat-dot" style="background:${cat.color}"></span>${cat.category}`;
+    block.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "menu-grid";
+
+    cat.items.forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "menu-btn";
+      btn.id = "btn-" + item.id;
+      btn.setAttribute("aria-pressed", "false");
+      btn.innerHTML = `
+        <span class="btn-name">${item.name}</span>
+        <span class="btn-bottom">
+          <span class="btn-price">${fmt(item.price)}</span>
+          <span class="btn-check" aria-hidden="true">
+            <svg viewBox="0 0 10 10" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1.5,5 4,7.5 8.5,2.5"/>
+            </svg>
+          </span>
+        </span>`;
+      btn.addEventListener("click", () => toggle(item));
+      grid.appendChild(btn);
+    });
+
+    block.appendChild(grid);
+    area.appendChild(block);
+  });
+}
+
+function toggle(item) {
+  const btn = document.getElementById("btn-" + item.id);
+  if (selected[item.id]) {
+    delete selected[item.id];
+    btn.classList.remove("selected");
+    btn.setAttribute("aria-pressed", "false");
+  } else {
+    selected[item.id] = item;
+    btn.classList.add("selected");
+    btn.setAttribute("aria-pressed", "true");
+  }
+  renderReceipt();
+}
+
+function renderReceipt() {
+  const items = Object.values(selected);
+  const total = items.reduce((s, i) => s + i.price, 0);
+  const emptyState = document.getElementById("empty-state");
+  const rcptItems = document.getElementById("receipt-items");
+  const totalCard = document.getElementById("total-card");
+
+  if (items.length === 0) {
+    emptyState.style.display = "";
+    rcptItems.style.display = "none";
+    totalCard.style.display = "none";
+    return;
+  }
+
+  emptyState.style.display = "none";
+  rcptItems.style.display = "";
+  totalCard.style.display = "";
+
+  rcptItems.innerHTML = "";
+  items.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "receipt-item";
+    const delBtn = document.createElement("button");
+    delBtn.className = "ri-del";
+    delBtn.setAttribute("aria-label", item.name + "を削除");
+    delBtn.innerHTML = `<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="2" y1="2" x2="12" y2="12"/><line x1="12" y1="2" x2="2" y2="12"/></svg>`;
+    delBtn.addEventListener("click", () => toggle(item));
+
+    row.innerHTML = `<span class="ri-name">${item.name}</span><span class="ri-price">${fmt(item.price)}</span>`;
+    row.appendChild(delBtn);
+    rcptItems.appendChild(row);
+  });
+
+  document.getElementById("total-amount").textContent = fmt(total);
+  document.getElementById("total-count").textContent = `${items.length}メニュー選択中`;
+}
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  selected = {};
+  document.querySelectorAll(".menu-btn.selected").forEach(b => {
+    b.classList.remove("selected");
+    b.setAttribute("aria-pressed", "false");
+  });
+  renderReceipt();
+});
+
+buildMenu();
+</script>
+</body>
+</html>
